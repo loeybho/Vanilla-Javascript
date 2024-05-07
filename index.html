@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo List - VanillaJS</title>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <div id="todo-wrapper">
+      <header>
+        <h1>Todo List - VanillaJs</h1>
+      </header>
+
+      <div id="main">
+        <div id="main-container">
+          <ul>
+            <li>
+              <h2>오늘 할 일 🍀</h2>
+              <div class="addTask">
+                <input
+                  type="text"
+                  autofocus
+                  onkeyup="handleAddKeydown(event)"
+                />
+                <button type="button" onclick="handleAdd()">추가</button>
+              </div>
+              <ul class="todoList">
+                <li data-no="1">
+                  <span>1</span>
+                  <span><s>샘플1</s></span>
+                  <button type="button">삭제</button>
+                </li>
+                <li>
+                  <span>2</span>
+                  <span><s>샘플2</s></span>
+                  <button type="button">삭제</button>
+                </li>
+                <li>
+                  <span>3</span>
+                  <span><s>샘플3</s></span>
+                  <button type="button">삭제</button>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <footer>
+        <p>Powered by 오별</p>
+      </footer>
+    </div>
+    <script type="text/javascript">
+      // 샘플 목록
+      let itemList = [
+        { no: 1, title: "자바스크립트 끝내기", done: true },
+        { no: 2, title: "타입스크립트 입문 하기", done: false },
+        { no: 3, title: "한입챌린지 참여하기", done: true },
+      ];
+
+      let lastNo = itemList[itemList.length - 1]?.no || 0;
+
+      // Todo 아이템을 받아서 DOM 객체로 만들어 반환
+      function getTodoItemElem(item) {
+        const liElem = document.createElement("li");
+        const noElem = document.createElement("span");
+        const titleElem = document.createElement("span");
+        const deleteElem = document.createElement("button");
+
+        const noTxt = document.createTextNode(item.no);
+        const titleTxt = document.createTextNode(item.title);
+        const deleteTxt = document.createTextNode("삭제");
+
+        noElem.appendChild(noTxt);
+
+        if (item.done) {
+          const sElem = document.createElement("s");
+          sElem.appendChild(titleTxt);
+          titleElem.appendChild(sElem);
+        } else {
+          titleElem.appendChild(titleTxt);
+        }
+
+        deleteElem.setAttribute("type", "button");
+        deleteElem.appendChild(deleteTxt);
+
+        // <li><span>1</span></li>
+        liElem.appendChild(noElem);
+
+        liElem.appendChild(titleElem);
+
+        liElem.appendChild(deleteElem);
+
+        liElem.setAttribute("data-no", item.no);
+        titleElem.setAttribute("onclick", `toggleDone(${item.no})`);
+        deleteElem.setAttribute("onclick", `deleteItem(${item.no})`);
+
+        return liElem;
+      }
+
+      // ul 요소
+      const todoListElem = document.querySelector(".todoList");
+      // 기존 목록 삭제
+      while (todoListElem.firstChild) {
+        todoListElem.firstChild.remove();
+      }
+
+      // itemList 배열의 각 Todo 아이템을 화면에 추가
+      itemList.forEach((item, index) => {
+        const liElem = getTodoItemElem(item);
+        todoListElem.appendChild(liElem);
+      });
+
+      // "추가" 클릭 이벤트
+      const handleAdd = () => {
+        const inputElem = document.querySelector(".addTask > input");
+        if (inputElem.value.trim() !== "") {
+          addItem(inputElem.value);
+          inputElem.value = "";
+          inputElem.focus();
+        }
+      };
+
+      // 엔터 이벤트
+      const handleAddKeydown = (event) => {
+        if (event.key === "Enter") handleAdd();
+      };
+
+      // 할일 추가
+      function addItem(title) {
+        const item = {
+          no: ++lastNo,
+          title,
+          done: false,
+        };
+
+        // 데이터에 새로운 아이템 추가
+        itemList.push(item);
+
+        // 화면에 새로운 아이템 추가
+        const liElem = getTodoItemElem(item);
+        const todoListElem = document.querySelector(".todoList");
+        todoListElem.appendChild(liElem);
+      }
+
+      // 완료/미완료 처리
+      function toggleDone(no) {
+        let selectedItem = itemList.find((item) => item.no === no);
+        selectedItem.done = !selectedItem.done;
+
+        const selectedLi = document.querySelector(
+          `.todoList > li[data-no="${no}"]`
+        );
+        if (selectedItem.done) {
+          const titleElem = selectedLi.children[1];
+          const sElem = document.createElement("s");
+          sElem.appendChild(titleElem.firstChild);
+          titleElem.appendChild(sElem);
+        } else {
+          const titleElem = selectedLi.children[1];
+          titleElem.appendChild(titleElem.firstElementChild.firstChild);
+          titleElem.firstElementChild.remove();
+        }
+      }
+      // 할일 삭제
+      function deleteItem(no) {
+        itemList = itemList.filter((item) => item.no !== no);
+        // 삭제된 데이터로 다시 렌더링
+        while (todoListElem.firstChild) {
+          todoListElem.firstChild.remove();
+        }
+
+        itemList.forEach((item, index) => {
+          item.no = index + 1;
+          const liElem = getTodoItemElem(item);
+          todoListElem.appendChild(liElem);
+        });
+      }
+    </script>
+  </body>
+</html>
